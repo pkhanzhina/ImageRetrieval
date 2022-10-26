@@ -34,7 +34,7 @@ class Trainer:
         self.logger = NeptuneLogger(neptune_cfg)
 
     def __get_model(self):
-        self.device = torch.device("cuda" if torch.cuda.is_available() and self.cfg.device == 'gpu ' else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() and self.cfg.device == 'gpu' else "cpu")
         self.model = Resnet50(embed_size=self.cfg.embed_size, with_norm=True).to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.cfg.lr )
         self.criterion = TripletLoss(alpha=self.cfg.alpha)
