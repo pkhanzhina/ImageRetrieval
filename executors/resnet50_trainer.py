@@ -122,11 +122,11 @@ class Trainer:
             output = self.model(batch_data.to(self.device))
             all_embed.append(output.detach().cpu().view(-1, output.size(-1)))
             all_labels.extend(batch_labels)
-            images.append(cv2.resize(prepare_img(batch_data.cpu()), (50, 50)))
+            # images.append(cv2.resize(prepare_img(batch_data.cpu()), (50, 50)))
         return {
             'embeddings': torch.vstack(all_embed).numpy(),
             'labels':  torch.vstack(all_labels).numpy(),
-            'images': np.stack(images)
+            # 'images': np.stack(images)
         }
 
     def overfit(self):
@@ -148,7 +148,7 @@ class Trainer:
             self.start_epoch = self._load_model(self.cfg.epoch_to_load)
 
         if self.cfg.evaluate_before_training:
-            self.evaluate('valid')
+            self.evaluate('test')
 
         for epoch in range(self.start_epoch, self.max_epoch):
             self.model.train()
@@ -160,7 +160,7 @@ class Trainer:
                 self.logger.log_metrics(['loss/train'], [loss], self.global_step)
                 pbar.set_description(desc='[]: loss - {:.4f}'.format(epoch, loss))
 
-            self.evaluate('valid')
+            self.evaluate('test')
             self._dump_model(epoch + 1)
 
     def evaluate(self, data_type='test', epoch=None):
@@ -178,7 +178,8 @@ class Trainer:
             with open(os.path.join(path_to_embeds, f"{data_type}_data.pickle"), 'rb') as f:
                 data = pickle.load(f)
 
-        all_embed, all_labels, images = data['embeddings'], data['labels'], data['images']
+        # all_embed, all_labels, images = data['embeddings'], data['labels'], data['images']
+        all_embed, all_labels = data['embeddings'], data['labels']
 
         retrieval_set = self.eval_retrieval[data_type]
         query_set = self.eval_query[data_type]
