@@ -118,8 +118,7 @@ class Trainer:
     def get_embeddings(self, loader):
         all_embed, all_labels, images = [], [], []
         self.model.eval()
-        for i, (batch_data, batch_labels) in enumerate(loader):
-            print(f'batch {i}/{len(loader)}')
+        for i, (batch_data, batch_labels) in enumerate(tqdm(loader, desc='Get embeddings')):
             output = self.model(batch_data.to(self.device))
             all_embed.append(output.detach().cpu().view(-1, output.size(-1)))
             all_labels.extend(batch_labels)
@@ -145,13 +144,12 @@ class Trainer:
         plt.show()
 
     def fit(self):
-        # if self.cfg.epoch_to_load is not None:
-        #     self.start_epoch = self._load_model(self.cfg.epoch_to_load)
+        if self.cfg.epoch_to_load is not None:
+            self.start_epoch = self._load_model(self.cfg.epoch_to_load)
 
-        # if self.cfg.evaluate_before_training:
-        #     self.evaluate('valid')
+        if self.cfg.evaluate_before_training:
+            self.evaluate('valid')
 
-        # self._dump_model(self.start_epoch)
         for epoch in range(self.start_epoch, self.max_epoch):
             self.model.train()
             self.model.apply(set_bn_eval)
@@ -161,8 +159,9 @@ class Trainer:
                 self.global_step += 1
                 self.logger.log_metrics(['loss/train'], [loss], self.global_step)
                 pbar.set_description(desc='[]: loss - {:.4f}'.format(epoch, loss))
-            # self._dump_model(epoch + 1)
-            # self.evaluate('valid')
+
+            self.evaluate('valid')
+            self._dump_model(epoch + 1)
 
     def evaluate(self, data_type='test', epoch=None):
         loader = self.valid_dataloader if data_type == 'valid' else self.test_dataloader
@@ -211,4 +210,4 @@ class Trainer:
 if __name__ == '__main__':
     from configs.train_cfg import cfg as train_cfg
     trainer = Trainer(train_cfg)
-    trainer.fit()
+    trainer.evaluate()

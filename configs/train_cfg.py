@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from easydict import EasyDict
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT_DIR = '../'
 
 cfg = EasyDict()
 
