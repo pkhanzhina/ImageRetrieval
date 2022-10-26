@@ -148,7 +148,7 @@ class Trainer:
             self.start_epoch = self._load_model(self.cfg.epoch_to_load)
 
         if self.cfg.evaluate_before_training:
-            self.evaluate('test')
+            self.evaluate('test', self.start_epoch)
 
         for epoch in range(self.start_epoch, self.max_epoch):
             self.model.train()
@@ -160,7 +160,7 @@ class Trainer:
                 self.logger.log_metrics(['loss/train'], [loss], self.global_step)
                 pbar.set_description(desc='[]: loss - {:.4f}'.format(epoch, loss))
 
-            self.evaluate('test')
+            self.evaluate('test', epoch + 1)
             self._dump_model(epoch + 1)
 
     def evaluate(self, data_type='test', epoch=None):
@@ -196,6 +196,8 @@ class Trainer:
             nn_indices.append(retrieval_labels[ids]), nn_distances.append(distances)
         recall = recall_at_k(np.vstack(nn_indices), np.vstack(query_labels), topk=self.cfg.eval_top_k)
 
+        self.logger.log_metrics([f"{data_type}_r@{k}" for k in recall.keys()], list(recall.values()), step=epoch)
+
         print(f"evaluation on {data_type}")
         print(f"\t[{epoch}]:", ',\t'.join(["r@{} - {:.2%}".format(k, r) for (k, r) in recall.items()]))
 
@@ -211,4 +213,4 @@ class Trainer:
 if __name__ == '__main__':
     from configs.train_cfg import cfg as train_cfg
     trainer = Trainer(train_cfg)
-    trainer.evaluate()
+    trainer.evaluate(data_type='valid', epoch=1)
