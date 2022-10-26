@@ -22,10 +22,10 @@ def plot_topn(queries, query_labels, retrieval_set, retrieval_labels, k=5):
             if j == 0:
                 images.append(cv2.resize(queries[i], (h, w)))
                 continue
-            border_color = [0, 0, 255] if query_labels[i] != retrieval_labels[i][j - 1] else [0, 255, 0]
+            border_color = [255, 0, 0] if query_labels[i] != retrieval_labels[i][j - 1] else [0, 255, 0]
             img = cv2.copyMakeBorder(retrieval_set[i][j - 1], 3, 3, 3, 3, cv2.BORDER_CONSTANT, value=border_color)
             images.append(cv2.resize(img, (h, w)))
-        axs[i].imshow(np.hstack(images))
+        axs[i].imshow(np.hstack(images).astype(np.uint8))
         axs[i].axis('off')
 
     plt.show()

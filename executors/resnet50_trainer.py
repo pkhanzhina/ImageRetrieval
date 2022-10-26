@@ -186,8 +186,7 @@ class Trainer:
         # retrieval_labels = nn_labels[ind]
         # plot_topn(query_images, query_labels, retrieval_images, retrieval_labels, k=5)
 
-        # print(recall)
-        # self.logger.log_metrics([f"{data_type}/r@{k}" for k in recall.keys()], list(recall.values()), step=epoch)
+        self.logger.log_metrics([f"{data_type}/r@{k}" for k in recall.keys()], list(recall.values()), step=epoch)
 
         print(f"evaluation on {data_type}")
         print(f"\t[{epoch}]:", ',\t'.join(["r@{} - {:.2%}".format(k, r) for (k, r) in recall.items()]))
