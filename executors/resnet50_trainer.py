@@ -111,11 +111,11 @@ class Trainer:
             output = self.model(batch_data.to(self.device))
             all_embed.append(output.detach().cpu().view(-1, output.size(-1)))
             all_labels.extend(batch_labels)
-            images.append(cv2.resize(prepare_img(batch_data.cpu()), (50, 50)))
+            # images.append(cv2.resize(prepare_img(batch_data.cpu()), (50, 50)))
         return {
             'embeddings': torch.vstack(all_embed).numpy(),
             'labels':  torch.vstack(all_labels).numpy(),
-            'images': np.stack(images)
+            # 'images': np.stack(images)
         }
 
     def overfit(self):
