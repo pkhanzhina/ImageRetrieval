@@ -107,8 +107,8 @@ class Trainer:
         return start_epoch
 
     def make_training_step(self, data, labels):
-        pred = self.model(data)
-        loss = self.criterion(pred, labels)
+        pred = self.model(data.to(self.device))
+        loss = self.criterion(pred, labels.to(self.device))
         loss.backward()
         self.optimizer.step()
         self.optimizer.zero_grad()
