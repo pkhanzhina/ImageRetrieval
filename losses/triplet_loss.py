@@ -30,7 +30,6 @@ class TripletLoss(nn.Module):
         return torch.stack(anchor), torch.stack(positive), torch.stack(negative)
 
     def forward(self, output, target):
-        print(target)
         pairwise_dist = 2 - 2 * (output @ output.transpose(0, 1))
         anchor, positive, negative = self.choose_triplets(pairwise_dist, target)
 
