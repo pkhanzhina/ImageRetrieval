@@ -107,12 +107,11 @@ class Trainer:
     def get_embeddings(self, loader):
         all_embed, all_labels, images = [], [], []
         self.model.eval()
-        with torch.no_grad():
-            for i, (batch_data, batch_labels) in enumerate(tqdm(loader, desc='Get embeddings')):
-                output = self.model(batch_data.to(self.device))
-                all_embed.append(output.detach().cpu().view(-1, output.size(-1)))
-                all_labels.extend(batch_labels)
-                images.append(cv2.resize(prepare_img(batch_data.cpu()), (50, 50)))
+        for i, (batch_data, batch_labels) in enumerate(tqdm(loader, desc='Get embeddings')):
+            output = self.model(batch_data.to(self.device))
+            all_embed.append(output.detach().cpu().view(-1, output.size(-1)))
+            all_labels.extend(batch_labels)
+            images.append(cv2.resize(prepare_img(batch_data.cpu()), (50, 50)))
         return {
             'embeddings': torch.vstack(all_embed).numpy(),
             'labels':  torch.vstack(all_labels).numpy(),
