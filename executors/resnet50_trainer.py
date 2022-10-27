@@ -32,7 +32,7 @@ class Trainer:
         self.__get_data()
         self.__get_model()
 
-        self.logger = NeptuneLogger(neptune_cfg)
+        self.logger = NeptuneLogger(neptune_cfg, cfg.run_name)
 
     def __get_model(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() and self.cfg.device == 'gpu' else "cpu")

@@ -3,13 +3,14 @@ from neptune.new.types import File
 
 
 class NeptuneLogger:
-    def __init__(self, cfg):
+    def __init__(self, cfg, run):
         self.cfg = cfg
-        self.initialize()
+        self.initialize(run)
 
-    def initialize(self):
+    def initialize(self, run):
         self.run = neptune.init_run(self.cfg.project_name,
-                                    api_token=self.cfg.api_token)
+                                    api_token=self.cfg.api_token,
+                                    run=run)
 
     def end_logging(self):
         self.run.stop()

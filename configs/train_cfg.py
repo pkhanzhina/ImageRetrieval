@@ -19,6 +19,8 @@ cfg.eval_top_k = (1, 3, 5, 10)
 cfg.evaluate_before_training = False
 cfg.epoch_to_load = None
 
+cfg.run_name = 'FIN-6'
+
 # dataset
 cfg.data_dir = r'C:\Users\khanz\PycharmProjects\inno_ds\final_project\data\merged_data'
 
