@@ -52,7 +52,7 @@ def make(config, model, type, subset_indices = None, inshop_type = None):
             ds,
             # ignore batch_size, since batch_sampler enabled
             **{k: _c[k] for k in _c if k != 'batch_size'},
-            batch_size = -1,
+            # batch_size = -1,
             batch_sampler = ClassBalancedSampler(
                 ds,
                 batch_size = config['dataloader']['batch_size'],
