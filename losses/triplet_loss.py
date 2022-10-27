@@ -27,7 +27,10 @@ class TripletLoss(nn.Module):
                     continue
                 semi_hard = np.random.choice(candidates)
                 anchor.append(a), positive.append(p), negative.append(torch.tensor(semi_hard))
-        return torch.stack(anchor), torch.stack(positive), torch.stack(negative)
+        anchor = torch.stack(anchor) if len(anchor) > 0 else torch.LongTensor([])
+        positive = torch.stack(positive) if len(positive) > 0 else torch.LongTensor([])
+        negative = torch.stack(negative) if len(negative) > 0 else torch.LongTensor([])
+        return anchor, positive, negative
 
     def forward(self, output, target):
         pairwise_dist = 2 - 2 * (output @ output.transpose(0, 1))
