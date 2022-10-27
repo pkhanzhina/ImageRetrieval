@@ -83,7 +83,7 @@ class Trainer:
         torch.save(state_dict, path_to_save)
 
     def _load_model(self, epoch):
-        path = os.path.join(self.cfg.checkpoints_dir, f"epoch-{epoch}.pt")
+        path = os.path.join(self.cfg.pretrained_dir, f"epoch-{epoch}.pt")
         start_epoch = 0
         try:
             state_dict = torch.load(path)
@@ -91,6 +91,7 @@ class Trainer:
             self.optimizer.load_state_dict(state_dict['optimizer_state_dict'])
             self.global_step = state_dict['global_step']
             start_epoch = state_dict['epoch']
+            print(f'loaded model from epoch {epoch}')
         except Exception as e:
             print(e)
         return start_epoch
