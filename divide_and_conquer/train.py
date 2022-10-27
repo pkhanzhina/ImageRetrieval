@@ -22,7 +22,7 @@ from neptune_cfg import neptune_cfg
 warnings.simplefilter("ignore", category=PendingDeprecationWarning)
 os.putenv("OMP_NUM_THREADS", "8")
 
-neptune_logger = NeptuneLogger(neptune_cfg, 'FIN-15')
+neptune_logger = None
 
 def load_config(config_name):
     with open(config_name, 'r') as f:
@@ -38,6 +38,7 @@ def load_config(config_name):
             else:
                 eval_json(config[k])
     eval_json(config)
+    neptune_logger = NeptuneLogger(neptune_cfg, config['run_id'])
     return config
 
 
