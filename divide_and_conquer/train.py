@@ -21,6 +21,7 @@ from neptune_cfg import neptune_cfg
 
 warnings.simplefilter("ignore", category=PendingDeprecationWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=ResourceWarning)
 os.putenv("OMP_NUM_THREADS", "8")
 
 

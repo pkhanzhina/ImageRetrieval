@@ -89,9 +89,9 @@ def merge(dls_non_iter):
     for j in range(nb_batches):
         for i in I:
             b = next(dls[i], None)
-            if b == None:
+            if b is None:
                 # initialize new dataloader in case no batches left
                 dls[i] = iter(dls_non_iter[i])
                 b = next(dls[i])
-            yield b, dls[i].dataset
+            yield b, dls_non_iter[i].dataset
 
