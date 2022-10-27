@@ -7,6 +7,8 @@ import sys
 
 import train
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

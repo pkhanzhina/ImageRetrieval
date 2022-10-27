@@ -62,6 +62,7 @@ def make(config, model, type, subset_indices = None, inshop_type = None):
     else:
         # else init or eval loader
         dl = torch.utils.data.DataLoader(ds, **config['dataloader'])
+    dl.dataset = ds
     return dl
 
 
