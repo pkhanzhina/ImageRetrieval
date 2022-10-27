@@ -322,7 +322,7 @@ def start(config):
         _recall = metrics[e]['score']['recall']
         k = [1, 3, 5, 10]
         names = [f"test/r@{kk}" for kk in k]
-        neptune_logger.log_metrics(names, _recall, step=e)
+        neptune_logger.log_metrics(names, _recall, step=e+1)
         logging.debug(
             'Evaluation total elapsed time: {:.2f} s'.format(
                 time.time() - tic
