@@ -12,9 +12,9 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--nb-clusters', required = True, type = int, default=8)
+    parser.add_argument('--nb-clusters', type = int, default=8)
     parser.add_argument('--dataset', dest = 'dataset_selected',
-        choices=['sop', 'inshop', 'vid', 'flowers'], required = True, default='flowers'
+        choices=['sop', 'inshop', 'vid', 'flowers'], default='flowers'
     )
     parser.add_argument('--nb-epochs', type = int, default=200)
     parser.add_argument('--finetune-epoch', type = int, default=190)

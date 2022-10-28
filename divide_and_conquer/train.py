@@ -142,6 +142,7 @@ def start(config):
 
     metrics = {}
     neptune_logger = NeptuneLogger(neptune_cfg, config['run_id'])
+    global_step = 0
 
     # reserve GPU memory for faiss if faiss-gpu used
     faiss_reserver = lib.faissext.MemoryReserver()
@@ -297,7 +298,8 @@ def start(config):
         ):
             loss = train_batch(model, criterion, opt, config, batch, dset, e)
             losses_per_epoch.append(loss)
-            neptune_logger.log_metrics(['loss/train'], [loss], step=len(losses_per_epoch) + num_batches_approx*e)
+            neptune_logger.log_metrics(['loss/train'], [loss], step=global_step)
+            global_step += 1
 
         time_per_epoch_2 = time.time()
         losses.append(np.mean(losses_per_epoch[-20:]))
