@@ -186,7 +186,7 @@ class Trainer:
         print(f"\t[{epoch}]:", ',\t'.join(["p@{} - {:.2%}".format(k, r) for (k, r) in precision.items()]))
 
         self.logger.log_metrics([f"{data_type}/r@{k}" for k in recall.keys()], list(recall.values()), step=epoch)
-        self.logger.log_metrics([f"{data_type}/p@{k}" for k in precision.keys()], list(recall.values()), step=epoch)
+        self.logger.log_metrics([f"{data_type}/p@{k}" for k in precision.keys()], list(precision.values()), step=epoch)
 
 
 if __name__ == '__main__':
