@@ -14,7 +14,7 @@ from configs.neptune_cfg import neptune_cfg
 from dataloader.batch_sampler import RetrievalBatchSampler
 from dataset.dataset import RetrievalDataset
 from losses.triplet_loss import TripletLoss
-from metrics.recall import recall_at_k
+from metrics.metrics import recall_at_k, precision_at_k
 from models.resnet50 import Resnet50
 from models.utils import set_bn_eval
 from utils.neptune_logger import NeptuneLogger
@@ -37,7 +37,7 @@ class Trainer:
     def __get_model(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() and self.cfg.device == 'gpu' else "cpu")
         self.model = Resnet50(embed_size=self.cfg.embed_size, with_norm=True).to(self.device)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.cfg.lr )
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.cfg.lr)
         self.criterion = TripletLoss(alpha=self.cfg.alpha)
 
         print(self.device)
@@ -62,9 +62,9 @@ class Trainer:
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
 
-        self.valid_dataset = RetrievalDataset(self.cfg.data_dir, 'train', transforms=test_preprocess)
-        self.valid_dataloader = torch.utils.data.dataloader.DataLoader(
-            self.valid_dataset, shuffle=False, batch_size=self.cfg.eval_batch_size, drop_last=False)
+        # self.valid_dataset = RetrievalDataset(self.cfg.data_dir, 'train', transforms=test_preprocess)
+        # self.valid_dataloader = torch.utils.data.dataloader.DataLoader(
+        #     self.valid_dataset, shuffle=False, batch_size=self.cfg.eval_batch_size, drop_last=False)
 
         self.test_dataset = RetrievalDataset(self.cfg.data_dir, 'test', transforms=test_preprocess)
         self.test_dataloader = torch.utils.data.dataloader.DataLoader(
@@ -115,7 +115,7 @@ class Trainer:
             # images.append(cv2.resize(prepare_img(batch_data.cpu()), (50, 50)))
         return {
             'embeddings': torch.vstack(all_embed).numpy(),
-            'labels':  torch.vstack(all_labels).numpy(),
+            'labels': torch.vstack(all_labels).numpy(),
             # 'images': np.stack(images)
         }
 
@@ -154,7 +154,7 @@ class Trainer:
             self._dump_model(epoch + 1)
 
     def evaluate(self, data_type='test', epoch=None):
-        loader = self.valid_dataloader if data_type == 'valid' else self.test_dataloader
+        loader = self.test_dataloader
 
         max_k = max(self.cfg.eval_top_k)
 
@@ -168,7 +168,6 @@ class Trainer:
             with open(os.path.join(path_to_embeds, f"{data_type}_data.pickle"), 'rb') as f:
                 data = pickle.load(f)
 
-        # all_embed, all_labels, images = data['embeddings'], data['labels'], data['images']
         all_embed, all_labels = data['embeddings'], data['labels']
 
         index = nmslib.init(method='hnsw', space='l2')
@@ -177,31 +176,21 @@ class Trainer:
         ids, _ = list(zip(*index.knnQueryBatch(all_embed, k=max_k + 1)))
         ids = np.asarray(ids)[:, 1:]
         nn_labels = all_labels[ids].reshape(-1, max_k)
+
         recall = recall_at_k(nn_labels, np.vstack(all_labels), topk=self.cfg.eval_top_k)
-
-        # ind = np.random.randint(0, len(all_labels), 3)
-        # query_images = images[ind]
-        # query_labels = all_labels[ind]
-        # retrieval_images = images[ids[ind]]
-        # retrieval_labels = nn_labels[ind]
-        # plot_topn(query_images, query_labels, retrieval_images, retrieval_labels, k=5)
-
-        self.logger.log_metrics([f"{data_type}/r@{k}" for k in recall.keys()], list(recall.values()), step=epoch)
-
         print(f"evaluation on {data_type}")
         print(f"\t[{epoch}]:", ',\t'.join(["r@{} - {:.2%}".format(k, r) for (k, r) in recall.items()]))
 
-        # label_img = np.concatenate([images[retrieval_set], images[query_set]])
-        # metadata = pd.DataFrame(data={
-        #     'class': retrieval_labels.tolist() + query_labels.tolist(),
-        #     'set_type': ['retrieval']*len(retrieval_labels) + ['query']*len(query_labels)})
-        # embeddings = np.concatenate([retrieval_embed, query_embed])
-        # image_retrieval_tensorboard_projection(writer, embeddings, metadata, label_img,
-        #                                        exp_name=f"{data_type}_{self.cfg.experiment_name}_step_{step}")
+        precision = precision_at_k(nn_labels, np.vstack(all_labels), topk=self.cfg.eval_top_k)
+        print(f"evaluation on {data_type}")
+        print(f"\t[{epoch}]:", ',\t'.join(["p@{} - {:.2%}".format(k, r) for (k, r) in precision.items()]))
+
+        self.logger.log_metrics([f"{data_type}/r@{k}" for k in recall.keys()], list(recall.values()), step=epoch)
+        self.logger.log_metrics([f"{data_type}/p@{k}" for k in precision.keys()], list(recall.values()), step=epoch)
 
 
 if __name__ == '__main__':
     from configs.train_cfg import cfg as train_cfg
+
     trainer = Trainer(train_cfg)
-    # trainer.overfit()
-    trainer.evaluate(data_type='valid', epoch=1)
+    trainer.evaluate(data_type='test', epoch=0)
