@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import nmslib
 import numpy as np
 import torch
-from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 from tqdm.auto import tqdm
 
@@ -45,6 +44,7 @@ class Trainer:
 
     def __get_data(self):
         train_preprocess = transforms.Compose([
+            transforms.Resize(256),
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
@@ -62,9 +62,9 @@ class Trainer:
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
 
-        # self.valid_dataset = RetrievalDataset(self.cfg.data_dir, 'train', transforms=test_preprocess)
-        # self.valid_dataloader = torch.utils.data.dataloader.DataLoader(
-        #     self.valid_dataset, shuffle=False, batch_size=self.cfg.eval_batch_size, drop_last=False)
+        self.valid_dataset = RetrievalDataset(self.cfg.data_dir, 'train', transforms=test_preprocess)
+        self.valid_dataloader = torch.utils.data.dataloader.DataLoader(
+            self.valid_dataset, shuffle=False, batch_size=self.cfg.eval_batch_size, drop_last=False)
 
         self.test_dataset = RetrievalDataset(self.cfg.data_dir, 'test', transforms=test_preprocess)
         self.test_dataloader = torch.utils.data.dataloader.DataLoader(
@@ -139,6 +139,7 @@ class Trainer:
 
         if self.cfg.evaluate_before_training:
             self.evaluate('test', self.start_epoch)
+            self.evaluate('valid', self.start_epoch)
 
         for epoch in range(self.start_epoch, self.max_epoch):
             self.model.train()
@@ -151,10 +152,11 @@ class Trainer:
                 pbar.set_description(desc='[]: loss - {:.4f}'.format(epoch, loss))
 
             self.evaluate('test', epoch + 1)
+            self.evaluate('valid', epoch + 1)
             self._dump_model(epoch + 1)
 
     def evaluate(self, data_type='test', epoch=None):
-        loader = self.test_dataloader
+        loader = self.test_dataloader if data_type == 'test' else self.valid_dataloader
 
         max_k = max(self.cfg.eval_top_k)
 
@@ -162,8 +164,9 @@ class Trainer:
         if not os.path.exists(os.path.join(path_to_embeds, f"{data_type}_data.pickle")):
             os.makedirs(path_to_embeds, exist_ok=True)
             data = self.get_embeddings(loader)
-            with open(os.path.join(path_to_embeds, f"{data_type}_data.pickle"), 'wb') as f:
-                pickle.dump(data, f)
+            if data_type != 'valid':
+                with open(os.path.join(path_to_embeds, f"{data_type}_data.pickle"), 'wb') as f:
+                    pickle.dump(data, f)
         else:
             with open(os.path.join(path_to_embeds, f"{data_type}_data.pickle"), 'rb') as f:
                 data = pickle.load(f)
@@ -186,7 +189,7 @@ class Trainer:
         print(f"\t[{epoch}]:", ',\t'.join(["p@{} - {:.2%}".format(k, r) for (k, r) in precision.items()]))
 
         self.logger.log_metrics([f"{data_type}/r@{k}" for k in recall.keys()], list(recall.values()), step=epoch)
-        self.logger.log_metrics([f"{data_type}/p@{k}" for k in precision.keys()], list(precision.values()), step=epoch)
+        # self.logger.log_metrics([f"{data_type}/p@{k}" for k in precision.keys()], list(precision.values()), step=epoch)
 
 
 if __name__ == '__main__':
