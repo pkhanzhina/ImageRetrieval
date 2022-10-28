@@ -13,10 +13,7 @@ class RetrievalDataset(data.Dataset):
         self.data_type = data_type
         self.transforms = transforms
 
-        with open(os.path.join(root_dir, f'{data_type}_classes.pickle'), 'rb') as f:
-            class_indices = pickle.load(f)
-        annot_df = pd.read_csv(os.path.join(root_dir, 'annotation.csv'))
-        annot_df = annot_df[annot_df['label'].isin(class_indices)]
+        annot_df = pd.read_csv(os.path.join(root_dir, f'annotation_{data_type}.csv'))
         self.paths = list(annot_df['path'].values)
         self.labels = list(annot_df['label'].values)
 
