@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--nb-clusters', type = int, default=8)
+    parser.add_argument('--nb-clusters', type = int, default=4)
     parser.add_argument('--dataset', dest = 'dataset_selected',
         choices=['sop', 'inshop', 'vid', 'flowers'], default='flowers'
     )

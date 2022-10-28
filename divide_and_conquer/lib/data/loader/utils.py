@@ -46,6 +46,7 @@ def make(config, model, type, subset_indices = None, inshop_type = None):
             )
         )
     if type == 'train':
+        print(len(subset_indices), len(ds), len(ds.I))
         ds.set_subset(subset_indices)
         _c = config['dataloader']
         dl = torch.utils.data.DataLoader(
@@ -70,6 +71,7 @@ def make_from_clusters(C, subset_indices, model, config):
     import numpy as np
     from math import ceil
     dataloaders = [[None] for c in range(config['nb_clusters'])]
+    print('clusters', C)
     for c in range(config['nb_clusters']):
         dataloaders[c] = make(
             config = config, model = model, type = 'train', subset_indices = subset_indices[C == c],

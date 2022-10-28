@@ -44,6 +44,7 @@ def get_cluster_labels(model, data_loader, use_penultimate, nb_clusters,
         T_all = np.array(data_loader.dataset.ys)
         I_all = np.array(data_loader.dataset.I)
         C = np.zeros(len(T_all), dtype=int)
+    print('I_all', len(I_all), len(data_loader.dataset))
     return C, T_all, I_all
 
 
