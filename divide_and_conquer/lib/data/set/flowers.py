@@ -8,19 +8,15 @@ class Flowers(BaseDataset):
         BaseDataset.__init__(self, root, classes, transform)
         # amount of images deviates slightly from what's reported online
 
-        if classes == range(0, 169):
+        if classes == range(0, 63):
             data_type = 'train'
-        elif classes == range(169, 169 + 42):
+        elif classes == range(63, 63 + 42):
             data_type = 'test'
         else:
             print('Unknown range for classes selected')
             input()
 
-        with open(os.path.join(root, f'{data_type}_classes.pickle'), 'rb') as f:
-            class_indices = pickle.load(f)
-
-        annot_df = pd.read_csv(os.path.join(root, 'annotation.csv'))
-        annot_df = annot_df[annot_df['label'].isin(class_indices)]
+        annot_df = pd.read_csv(os.path.join(root, f'annotation_{data_type}.csv'))
 
         for i, l in annot_df.iterrows():
             self.im_paths += [os.path.join(root, l['path'])]
