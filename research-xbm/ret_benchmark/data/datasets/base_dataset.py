@@ -46,7 +46,7 @@ class BaseDataSet(Dataset):
     def _load_data(self):
         annot_df = pd.read_csv(self.img_source)
         self.path_list = annot_df['path'].values.tolist()
-        self.label_list = annot_df['label'].values.tolist()
+        self.label_list = annot_df['label'].astype(str).values.tolist()
         # with open(self.img_source, "r") as f:
         #     for line in f:
         #         _path, _label = re.split(r",", line.strip())
