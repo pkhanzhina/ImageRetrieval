@@ -44,7 +44,7 @@ def precision_at_k(knn_labels, gt_labels, k):
 
 def recall_at_k(knn_labels, gt_labels, k):
     curr_knn_labels = knn_labels[:, :k]
-    recall = np.mean(np.maximum(np.sum(curr_knn_labels == gt_labels, axis=1), 1))
+    recall = np.mean(np.minimum(np.sum(curr_knn_labels == gt_labels, axis=1), 1))
     return recall
 
 

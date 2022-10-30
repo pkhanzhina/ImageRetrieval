@@ -72,7 +72,7 @@ def do_train(
 
         if (
             iteration % cfg.VALIDATION.VERBOSE == 0 or iteration == max_iter
-        ) and iteration > 0:
+        ):
             model.eval()
             logger.info("Validation")
 
@@ -81,18 +81,18 @@ def do_train(
             feats = feat_extractor(model, val_loader[0], logger=logger)
             ret_metric = AccuracyCalculator(include=(
                 "precision_at_1",
-                "mean_average_precision_at_r",
-                "calculate_recall_at_1",
-                "calculate_recall_at_3",
-                "calculate_recall_at_5",
-                "calculate_recall_at_10"
+                "mean_average_precision_at_r", "r_precision",
+                "recall_at_1",
+                "recall_at_3",
+                "recall_at_5",
+                "recall_at_10"
             ), exclude=())
             ret_metric = ret_metric.get_accuracy(feats, feats, labels, labels, True)
-            mapr_curr = ret_metric['calculate_recall_at_1']
+            mapr_curr = ret_metric['recall_at_1']
             for k, v in ret_metric.items():
                 log_info[f"e_{k}"] = v
 
-            scheduler.step(log_info[f"R@1"])
+            scheduler.step(log_info[f"e_precision_at_1"])
             log_info["lr"] = optimizer.param_groups[0]["lr"]
             if mapr_curr > best_mapr:
                 best_mapr = mapr_curr
@@ -102,7 +102,7 @@ def do_train(
                 logger.info(f"Performance at iteration {iteration:06d}: {ret_metric}")
             flush_log(writer, iteration)
 
-            _recall = [ret_metric['calculate_recall_at_1'], ret_metric['calculate_recall_at_3'], ret_metric['calculate_recall_at_5'], ret_metric['calculate_recall_at_10']]
+            _recall = [ret_metric['recall_at_1'], ret_metric['recall_at_3'], ret_metric['recall_at_5'], ret_metric['recall_at_10']]
             k = [1, 3, 5, 10]
             names = [f"test/r@{kk}" for kk in k]
             neptune_logger.log_metrics(names, _recall, step=iteration)
