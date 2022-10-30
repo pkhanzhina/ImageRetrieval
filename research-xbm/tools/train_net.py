@@ -21,10 +21,10 @@ from ret_benchmark.utils.logger import setup_logger
 from ret_benchmark.utils.checkpoint import Checkpointer
 from tensorboardX import SummaryWriter
 
-# import resource
-#
-# rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
-# resource.setrlimit(resource.RLIMIT_NOFILE, (2048, rlimit[1]))
+import resource
+
+rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
+resource.setrlimit(resource.RLIMIT_NOFILE, (2048, rlimit[1]))
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
