@@ -28,7 +28,7 @@ class TripletLoss(nn.Module):
         ).t() == targets_row.expand(n, targets_row.shape[0])
         pos_mask = pos_mask.to(torch.uint8)
         neg_mask = 1 - pos_mask
-        pos_mask[:, :n] = pos_mask[:, :n] - eyes_
+        pos_mask[:, :n] = pos_mask[:, :n] - eyes_[:n]
 
         loss = list()
         neg_count = list()
