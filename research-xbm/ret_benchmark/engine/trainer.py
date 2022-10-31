@@ -94,6 +94,7 @@ def do_train(
 
             scheduler.step(log_info[f"e_precision_at_1"])
             log_info["lr"] = optimizer.param_groups[0]["lr"]
+            neptune_logger.log_metrics(['train/lr'], [log_info["lr"]], step=iteration)
             if mapr_curr > best_mapr:
                 best_mapr = mapr_curr
                 best_iteration = iteration
@@ -106,6 +107,19 @@ def do_train(
             k = [1, 3, 5, 10]
             names = [f"test/r@{kk}" for kk in k]
             neptune_logger.log_metrics(names, _recall, step=iteration)
+
+
+            labels = val_loader[1].dataset.label_list
+            labels = np.array([int(k) for k in labels])
+            feats = feat_extractor(model, val_loader[1], logger=logger)
+            ret_metric = AccuracyCalculator(include=("precision_at_1", "mean_average_precision_at_r", "r_precision", "recall_at_1", "recall_at_3", "recall_at_5", "recall_at_10"), exclude=())
+            ret_metric = ret_metric.get_accuracy(feats, feats, labels, labels, True)
+            _recall = [ret_metric['recall_at_1'], ret_metric['recall_at_3'], ret_metric['recall_at_5'],
+                       ret_metric['recall_at_10']]
+            k = [1, 3, 5, 10]
+            names = [f"valid/r@{kk}" for kk in k]
+            neptune_logger.log_metrics(names, _recall, step=iteration)
+
 
         model.train()
 

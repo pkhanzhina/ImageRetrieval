@@ -50,6 +50,7 @@ def build_data(cfg, is_train=True):
         all_data_loader = list()
         for x in [
             cfg.DATA.TEST_IMG_SOURCE,
+            cfg.DATA.TRAIN_IMG_SOURCE,
             cfg.DATA.QUERY_IMG_SOURCE,
             cfg.DATA.PKUVID_IMG_SOURCE,
         ]:
