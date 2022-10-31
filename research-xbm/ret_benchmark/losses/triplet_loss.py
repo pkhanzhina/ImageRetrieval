@@ -13,7 +13,7 @@ from ret_benchmark.utils.log_info import log_info
 
 @LOSS.register("triplet_loss")
 class TripletLoss(nn.Module):
-    def __init__(self, cfg, margin=0.1, **kwargs):
+    def __init__(self, cfg, margin=0.2, **kwargs):
         super(TripletLoss, self).__init__()
         self.margin = margin
 
@@ -26,6 +26,7 @@ class TripletLoss(nn.Module):
         pos_mask = targets_col.expand(
             targets_row.shape[0], n
         ).t() == targets_row.expand(n, targets_row.shape[0])
+        pos_mask = pos_mask.to(torch.uint8)
         neg_mask = 1 - pos_mask
         pos_mask[:, :n] = pos_mask[:, :n] - eyes_
 
