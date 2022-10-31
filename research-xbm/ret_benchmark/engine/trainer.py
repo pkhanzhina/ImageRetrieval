@@ -61,6 +61,7 @@ def do_train(
     neptune_logger = NeptuneLogger(neptune_cfg, run_id)
 
     iteration = 0
+    epoch = 0
 
     _train_loader = iter(train_loader)
     while iteration <= max_iter:
@@ -106,8 +107,7 @@ def do_train(
             _recall = [ret_metric['recall_at_1'], ret_metric['recall_at_3'], ret_metric['recall_at_5'], ret_metric['recall_at_10']]
             k = [1, 3, 5, 10]
             names = [f"test/r@{kk}" for kk in k]
-            neptune_logger.log_metrics(names, _recall, step=iteration)
-
+            neptune_logger.log_metrics(names, _recall, step=epoch)
 
             labels = val_loader[1].dataset.label_list
             labels = np.array([int(k) for k in labels])
@@ -118,8 +118,9 @@ def do_train(
                        ret_metric['recall_at_10']]
             k = [1, 3, 5, 10]
             names = [f"valid/r@{kk}" for kk in k]
-            neptune_logger.log_metrics(names, _recall, step=iteration)
+            neptune_logger.log_metrics(names, _recall, step=epoch)
 
+            epoch += 1
 
         model.train()
 
