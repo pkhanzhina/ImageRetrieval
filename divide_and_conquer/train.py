@@ -109,7 +109,7 @@ def get_criterion(config):
     logging.debug('Create margin loss. #classes={}'.format(nb_classes))
     criterion = [
         lib.loss.MarginLoss(
-            nb_classes, margin=config.loss.margin
+            nb_classes, margin=config['loss']['margin']
         ).cuda() for i in range(config['nb_clusters'])
     ]
     return criterion
