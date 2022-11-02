@@ -11,6 +11,7 @@ import argparse
 import torch
 import os
 import random
+import numpy as np
 
 from ret_benchmark.config import cfg
 from ret_benchmark.data import build_data
