@@ -113,3 +113,4 @@ _C.VALIDATION.VERBOSE = 200
 _C.VALIDATION.IS_VALIDATION = True
 
 _C.run_id = None
+_C.seed = 0

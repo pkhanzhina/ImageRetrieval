@@ -10,6 +10,7 @@
 import argparse
 import torch
 import os
+import random
 
 from ret_benchmark.config import cfg
 from ret_benchmark.data import build_data
@@ -30,6 +31,12 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 def train(cfg):
+
+    random.seed(cfg.seed)
+    np.random.seed(cfg.seed)
+    torch.manual_seed(cfg.seed)
+    torch.cuda.manual_seed_all(cfg.seed)
+
     logger = setup_logger(name="Train", level=cfg.LOGGER.LEVEL)
     logger.info(cfg)
     model = build_model(cfg)
