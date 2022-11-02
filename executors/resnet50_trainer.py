@@ -8,6 +8,7 @@ import numpy as np
 import torch
 from torchvision import transforms
 from tqdm.auto import tqdm
+import random
 
 from configs.neptune_cfg import neptune_cfg
 from dataloader.batch_sampler import RetrievalBatchSampler
@@ -27,6 +28,13 @@ class Trainer:
 
         self.start_epoch, self.global_step = 0, 0
         self.max_epoch = cfg.max_epoch
+
+        self.seed = cfg.seed
+
+        random.seed(self.seed)
+        np.random.seed(self.seed)
+        torch.manual_seed(self.seed)
+        torch.cuda.manual_seed_all(self.seed)
 
         self.__get_data()
         self.__get_model()

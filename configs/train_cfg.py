@@ -6,6 +6,8 @@ ROOT_DIR = '../'
 
 cfg = EasyDict()
 
+cfg.seed = 0
+
 cfg.lr = 1e-5
 cfg.embed_size = 128
 cfg.alpha = 0.20
