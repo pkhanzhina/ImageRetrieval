@@ -18,7 +18,6 @@ import warnings
 from neptune_logger import NeptuneLogger
 from neptune_cfg import neptune_cfg
 
-
 warnings.simplefilter("ignore", category=PendingDeprecationWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -28,6 +27,7 @@ os.putenv("OMP_NUM_THREADS", "8")
 def load_config(config_name):
     with open(config_name, 'r') as f:
         config = json.load(f)
+
     # config = json.load(open(config_name))
     def eval_json(config):
         for k in config:
@@ -38,6 +38,7 @@ def load_config(config_name):
                         config[k] = eval(config[k])
             else:
                 eval_json(config[k])
+
     eval_json(config)
     return config
 
@@ -57,24 +58,24 @@ class JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, x)
 
 
-def evaluate(model, dataloaders, logging, backend='faiss', config = None):
+def evaluate(model, dataloaders, logging, backend='faiss', config=None):
     if config is not None and config['dataset_selected'] == 'inshop':
         dl_query = lib.data.loader.make(config, model,
-            'eval', inshop_type = 'query')
+                                        'eval', inshop_type='query')
         dl_gallery = lib.data.loader.make(config, model,
-            'eval', inshop_type = 'gallery')
+                                          'eval', inshop_type='gallery')
         score = lib.utils.evaluate_in_shop(
             model,
-            dl_query = dl_query,
-            dl_gallery = dl_gallery,
-            use_penultimate = False,
-            backend = backend)
+            dl_query=dl_query,
+            dl_gallery=dl_gallery,
+            use_penultimate=False,
+            backend=backend)
     else:
         score = {
-            'eval':  lib.utils.evaluate(
+            'eval': lib.utils.evaluate(
                 model,
                 dataloaders['eval'],
-                use_penultimate = False,
+                use_penultimate=False,
                 backend=backend
             ),
             'valid': lib.utils.evaluate(
@@ -88,8 +89,8 @@ def evaluate(model, dataloaders, logging, backend='faiss', config = None):
 
 
 def train_batch(model, criterion, opt, config, batch, dset, epoch):
-    X = batch[0].cuda(non_blocking=True) # images
-    T = batch[1].cuda(non_blocking=True) # class labels
+    X = batch[0].cuda(non_blocking=True)  # images
+    T = batch[1].cuda(non_blocking=True)  # class labels
     # I = batch[2] # image ids
 
     opt.zero_grad()
@@ -98,7 +99,7 @@ def train_batch(model, criterion, opt, config, batch, dset, epoch):
     if epoch >= config['finetune_epoch'] * 8 / 19:
         pass
     else:
-        M = M.split(config['sz_embedding'] // config['nb_clusters'], dim = 1)
+        M = M.split(config['sz_embedding'] // config['nb_clusters'], dim=1)
         M = M[dset.id]
 
     M = torch.nn.functional.normalize(M, p=2, dim=1)
@@ -124,7 +125,6 @@ def get_criterion(config):
 
 
 def get_optimizer(config, model, criterion):
-
     opt = torch.optim.Adam([
         {
             'params': model.parameters_dict['backbone'],
@@ -140,7 +140,6 @@ def get_optimizer(config, model, criterion):
 
 
 def start(config):
-
     """
     Import `plt` after setting `matplotlib` backend to `agg`, because `tkinter`
     missing. If `agg` set, when this module is imported, then plots can not
@@ -156,7 +155,7 @@ def start(config):
     faiss_reserver = lib.faissext.MemoryReserver()
 
     # create logging directory
-    os.makedirs(config['log']['path'], exist_ok = True)
+    os.makedirs(config['log']['path'], exist_ok=True)
 
     # warn if log file exists already and append underscore
     import warnings
@@ -168,9 +167,9 @@ def start(config):
 
     # initialize logger
     logging.basicConfig(
-        format = "%(asctime)s %(message)s",
-        level = logging.DEBUG if config['verbose'] else logging.INFO,
-        handlers = [
+        format="%(asctime)s %(message)s",
+        level=logging.DEBUG if config['verbose'] else logging.INFO,
+        handlers=[
             logging.FileHandler(
                 "{0}/{1}.log".format(
                     config['log']['path'],
@@ -183,7 +182,7 @@ def start(config):
 
     # print summary of config
     logging.info(
-        json_dumps(obj = config, indent=4, cls = JSONEncoder, sort_keys = True)
+        json_dumps(obj=config, indent=4, cls=JSONEncoder, sort_keys=True)
     )
 
     # torch.cuda.set_device(config['cuda_device'])
@@ -213,10 +212,10 @@ def start(config):
             # query and gallery initialized in `make_clustered_dataloaders`
             if dl_type == 'init':
                 dataloaders[dl_type] = lib.data.loader.make(config, model,
-                    dl_type, inshop_type = 'train')
+                                                            dl_type, inshop_type='train')
         else:
             dataloaders[dl_type] = lib.data.loader.make(config, model,
-                dl_type)
+                                                        dl_type)
 
     criterion = get_criterion(config)
     opt = get_optimizer(config, model, criterion)
@@ -225,8 +224,8 @@ def start(config):
     logging.info("Evaluating initial model...")
     metrics[-1] = {
         'score': evaluate(model, dataloaders, logging,
-                        backend = config['backend'],
-                        config = config)}
+                          backend=config['backend'],
+                          config=config)}
     for dtype in ['eval', 'valid']:
         _recall = metrics[-1]['score'][dtype]['recall']
         if dtype == 'eval':
@@ -236,7 +235,8 @@ def start(config):
         neptune_logger.log_metrics(names, _recall, step=0)
 
     dataloaders['train'], C, T, I = make_clustered_dataloaders(model,
-            dataloaders['init'], config, reassign = False, logging = logging)
+                                                               dataloaders['init'], config, reassign=False,
+                                                               logging=logging)
     faiss_reserver.lock(config['backend'])
 
     metrics[-1].update({'C': C, 'T': T, 'I': I})
@@ -249,7 +249,7 @@ def start(config):
                     np.array(dataloaders['train'][c].dataset.ys)
                 )[:200]
             )
-            plt.hist(np.array(dataloaders['train'][c].dataset.ys), bins = 100)
+            plt.hist(np.array(dataloaders['train'][c].dataset.ys), bins=100)
             plt.show()
 
     logging.info("Training for {} epochs.".format(config['nb_epochs']))
@@ -271,7 +271,7 @@ def start(config):
                     "config['nb_clusters']: {})".format(config['nb_clusters']))
                 faiss_reserver.release()
                 dataloaders['train'], C, T, I = make_clustered_dataloaders(
-                    model, dataloaders['init'], config, logging = logging)
+                    model, dataloaders['init'], config, logging=logging)
                 assert len(dataloaders['train']) == 1
         elif e > 0 and config['recluster']['enabled'] and \
                 config['nb_clusters'] > 0:
@@ -279,8 +279,8 @@ def start(config):
                 logging.info("Reclustering dataloaders...")
                 faiss_reserver.release()
                 dataloaders['train'], C, T, I = make_clustered_dataloaders(
-                    model, dataloaders['init'], config, reassign = True,
-                    C_prev = C, I_prev = I, logging = logging)
+                    model, dataloaders['init'], config, reassign=True,
+                    C_prev=C, I_prev=I, logging=logging)
                 faiss_reserver.lock(config['backend'])
                 if config['verbose']:
                     for c in range(config['nb_clusters']):
@@ -288,11 +288,10 @@ def start(config):
                             np.bincount(
                                 np.array(
                                     dataloaders['train'][c].dataset.ys)
-                                )[:200]
-                            )
+                            )[:200]
+                        )
 
                 metrics[e].update({'C': C, 'T': T, 'I': I})
-
 
         # merge dataloaders (created from clusters) into one dataloader
         mdl = lib.data.loader.merge(dataloaders['train'])
@@ -302,10 +301,10 @@ def start(config):
         num_batches_approx = max_len_dataloaders * len(dataloaders['train'])
 
         for batch, dset in tqdm(
-            mdl,
-            total = num_batches_approx,
-            disable = num_batches_approx < 100,
-            desc = 'Train epoch {}.'.format(e)
+                mdl,
+                total=num_batches_approx,
+                disable=num_batches_approx < 100,
+                desc='Train epoch {}.'.format(e)
         ):
             loss = train_batch(model, criterion, opt, config, batch, dset, e)
             losses_per_epoch.append(loss)
@@ -326,23 +325,19 @@ def start(config):
         tic = time.time()
         metrics[e].update({
             'score': evaluate(model, dataloaders, logging,
-                        backend=config['backend'],
-                        config = config),
+                              backend=config['backend'],
+                              config=config),
             'loss': {
                 'train': losses[-1]
             }
         })
         for dtype in ['eval', 'valid']:
-            _recall = metrics[-1]['score'][dtype]['recall']
+            _recall = metrics[e]['score'][dtype]['recall']
             if dtype == 'eval':
                 dtype = 'test'
             k = [1, 3, 5, 10]
             names = [f"{dtype}/r@{kk}" for kk in k]
-            neptune_logger.log_metrics(names, _recall, step=e+1)
-        # _recall = metrics[e]['score']['recall']
-        # k = [1, 3, 5, 10]
-        # names = [f"test/r@{kk}" for kk in k]
-        # neptune_logger.log_metrics(names, _recall, step=e+1)
+            neptune_logger.log_metrics(names, _recall, step=e + 1)
 
         logging.debug(
             'Evaluation total elapsed time: {:.2f} s'.format(
@@ -351,7 +346,7 @@ def start(config):
         )
         faiss_reserver.lock(config['backend'])
 
-        recall_curr = metrics[e]['score']['recall'][0] # take R@1
+        recall_curr = metrics[e]['score']['eval']['recall'][0]  # take R@1
         if recall_curr > best_recall:
             best_recall = recall_curr
             best_epoch = e
@@ -362,9 +357,9 @@ def start(config):
 
         # save metrics etc. to shelve file
         with shelve.open(
-            os.path.join(
-                config['log']['path'], config['log']['name']),
-            writeback = True
+                os.path.join(
+                    config['log']['path'], config['log']['name']),
+                writeback=True
         ) as _f:
             if 'config' not in _f:
                 _f['config'] = config
@@ -391,4 +386,3 @@ def start(config):
         )
     )
     logging.info("Best R@1 = {} at epoch {}.".format(best_recall, best_epoch))
-
