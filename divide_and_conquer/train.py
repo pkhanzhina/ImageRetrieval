@@ -70,12 +70,20 @@ def evaluate(model, dataloaders, logging, backend='faiss', config = None):
             use_penultimate = False,
             backend = backend)
     else:
-        score = lib.utils.evaluate(
-            model,
-            dataloaders['eval'],
-            use_penultimate = False,
-            backend=backend
-        )
+        score = {
+            'eval':  lib.utils.evaluate(
+                model,
+                dataloaders['eval'],
+                use_penultimate = False,
+                backend=backend
+            ),
+            'valid': lib.utils.evaluate(
+                model,
+                dataloaders['valid'],
+                use_penultimate=False,
+                backend=backend
+            )
+        }
     return score
 
 
@@ -200,7 +208,7 @@ def start(config):
 
     # create init and eval dataloaders; init used for creating clustered DLs
     dataloaders = {}
-    for dl_type in ['init', 'eval']:
+    for dl_type in ['init', 'eval', 'valid']:
         if config['dataset_selected'] == 'inshop':
             # query and gallery initialized in `make_clustered_dataloaders`
             if dl_type == 'init':
@@ -219,10 +227,13 @@ def start(config):
         'score': evaluate(model, dataloaders, logging,
                         backend = config['backend'],
                         config = config)}
-    _recall = metrics[-1]['score']['recall']
-    k = [1, 3, 5, 10]
-    names = [f"test/r@{kk}" for kk in k]
-    neptune_logger.log_metrics(names, _recall, step=0)
+    for dtype in ['eval', 'valid']:
+        _recall = metrics[-1]['score'][dtype]['recall']
+        if dtype == 'eval':
+            dtype = 'test'
+        k = [1, 3, 5, 10]
+        names = [f"{dtype}/r@{kk}" for kk in k]
+        neptune_logger.log_metrics(names, _recall, step=0)
 
     dataloaders['train'], C, T, I = make_clustered_dataloaders(model,
             dataloaders['init'], config, reassign = False, logging = logging)
@@ -321,10 +332,18 @@ def start(config):
                 'train': losses[-1]
             }
         })
-        _recall = metrics[e]['score']['recall']
-        k = [1, 3, 5, 10]
-        names = [f"test/r@{kk}" for kk in k]
-        neptune_logger.log_metrics(names, _recall, step=e+1)
+        for dtype in ['eval', 'valid']:
+            _recall = metrics[-1]['score'][dtype]['recall']
+            if dtype == 'eval':
+                dtype = 'test'
+            k = [1, 3, 5, 10]
+            names = [f"{dtype}/r@{kk}" for kk in k]
+            neptune_logger.log_metrics(names, _recall, step=e+1)
+        # _recall = metrics[e]['score']['recall']
+        # k = [1, 3, 5, 10]
+        # names = [f"test/r@{kk}" for kk in k]
+        # neptune_logger.log_metrics(names, _recall, step=e+1)
+
         logging.debug(
             'Evaluation total elapsed time: {:.2f} s'.format(
                 time.time() - tic

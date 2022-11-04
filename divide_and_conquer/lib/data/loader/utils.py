@@ -37,13 +37,23 @@ def make(config, model, type, subset_indices = None, inshop_type = None):
             )
         )
     else:
-        ds = datasets[ds_name](
-            root = config['dataset'][ds_name]['root'],
-            classes = config['dataset'][ds_name]['classes'][type],
-            transform = transform.make(
-                **config['transform_parameters'],
-                is_train = True if type == 'train' else False
+        if type == 'valid':
+            ds = datasets[ds_name](
+                root=config['dataset'][ds_name]['root'],
+                classes=config['dataset'][ds_name]['classes']['train'],
+                transform=transform.make(
+                    **config['transform_parameters'],
+                    is_train=False
+                )
             )
+        else:
+            ds = datasets[ds_name](
+                root = config['dataset'][ds_name]['root'],
+                classes = config['dataset'][ds_name]['classes'][type],
+                transform = transform.make(
+                    **config['transform_parameters'],
+                    is_train = True if type == 'train' else False
+                )
         )
     if type == 'train':
         print(len(subset_indices), len(ds), len(ds.I))
