@@ -13,7 +13,7 @@ from ret_benchmark.utils.log_info import log_info
 
 @LOSS.register("triplet_loss")
 class TripletLoss(nn.Module):
-    def __init__(self, cfg, margin=0.4, **kwargs):
+    def __init__(self, cfg, margin=0.2, **kwargs):
         super(TripletLoss, self).__init__()
         self.margin = margin
 
