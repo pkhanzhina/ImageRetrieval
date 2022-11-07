@@ -4,7 +4,7 @@
 
 #### Основные notebook'и для подготовки данных и запуска обучения (папка notebooks)
 - `baseline.ipynb` - обучения базового метода
-- `d-and-c.ipynb` - обучения метода [Divide and Conquer](https://arxiv.org/abs/1912.06798)
+- `d-and-c.ipynb` - обучения метода [Divide and Conquer](https://openaccess.thecvf.com/content_CVPR_2019/papers/Sanakoyeu_Divide_and_Conquer_the_Embedding_Space_for_Metric_Learning_CVPR_2019_paper.pdf)
 - `data_preprocess.ipynb` - подготовка данных
 - `xbm.ipynb` - обучения метода [XBM](https://arxiv.org/abs/1912.06798)
 
